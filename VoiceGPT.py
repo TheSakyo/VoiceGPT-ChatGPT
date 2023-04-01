@@ -1,6 +1,7 @@
 # ~~~ IMPORTATIONS UTILE DES PACKAGE POUR LE FONCTIONNEMENT DU CODE ~~ #
 import time
-
+import sys
+import os
 import openai
 import asyncio
 import pyttsx3
@@ -17,6 +18,8 @@ GPT_SLEEP_WORD = ["au revoir assistant", "à la prochaine assistant"] # Mot clé
 
 audio = None # Permettra de récupérer l'audio du microphone
 bot_answer = None # Permettra de récupérer la réponse du bot
+
+error = False # Permettra de savoir s'il y a une erreur ou non
 
                                         ### -------------------------------------------------- ###
 
@@ -47,6 +50,8 @@ def synthesize_speech(text):
 
 ### ⬇️ Ici, c'est la fonction principale, dedans, on effectue toute la logique ⬇️ ###
 async def main():
+
+    global error # Récupère la variable de vérification en cas d'erreur (True ou False)
 
     ## °°° ⬇️ Tant que c'est vrai (boucle principale), on effectue le code pour interagir avec l'assistant ⬇️ ## °°°
     while True:
@@ -111,6 +116,37 @@ async def main():
                     print(f"Vous avez dit: {question}") # On indique à l'utilisateur ce qu'il a dit
                     print(f"En attente d'une réponse....") # On informe à l'utilisateur qu'une réponse est en préparation
 
+
+                    #""" ⬇️ On essaie de générer une réponse claire avec l'API d'openAI ⬇️ """#
+                    try:
+
+                        ## ⬇️ Envoie une invite à l'API GPT-3.5-turbo pour effectuer la réponse, en précisant des paramètres pour l'API GPT-3.5-turbo ⬇️ ##
+                        answer = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[ {"role": "system", "content": "Vous êtes un assistant utile."}, {"role": "user", "content": question} ],
+                                                              temperature=0.5, top_p=1, frequency_penalty=0, presence_penalty=0, n=1, stop=["\nUser:"])
+                        ## ⬆️ Envoie une invite à l'API GPT-3.5-turbo pour effectuer la réponse, en précisant des paramètres pour l'API GPT-3.5-turbo ⬆️ ##
+
+                        bot_answer = answer["choices"][0]["message"]["content"] # On récupère la réponse récupérée par cette API
+
+                                                ## ***** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ***** ##
+
+                        print("Réponse de l'assistant :", bot_answer) # On informe à l'utilisateur la réponse générée par l'assistant
+                        synthesize_speech(bot_answer) # L'Assistant va prononcer la réponse qu'il a générée
+
+                                                        ## *** ~~~~~~~~~~~~~~~~~~ *** ##
+
+                        sleep_word = get_sleep_word(question) # On vérifie s'il utilise le mot clé pour désactiver l'assistant
+
+                        audio = None # Redéfinit l'audio du microphone sur 'none' (rien)
+                        bot_answer = None # Redéfinit la réponse du bot sur 'none' (rien)
+                        if sleep_word is not None: break # Si l'utilisateur utilise bien le mot clé, on sort donc de la boucle actuelle (tant que c'est vrai)
+
+
+                    #""" ⬇️ Si on récupère une exception, c'est qu'il y a eu une erreur avec la clé d'API OpenAI, dans ce cas, on retourne l'erreur, et on sort ⬇️ """#
+                    except:
+                        print("Une erreur s'est produite, la clé d'API OpenAI ne fonctionne pas, fermeture du script...")
+                        error = True # Une erreur s'est produite, donc on définit la variable de vérification d'erreur sur 'Vrai'
+                        break # On sort donc de la boucle actuelle (tant que c'est vrai)
+
                 #""" ⬇️ Si on récupère une exception, on informe à l'utilisateur que l'assistant ne l'entend pas ⬇️ """#
                 except:
 
@@ -119,29 +155,9 @@ async def main():
                         synthesize_speech("Désolé, mais je ne vous entend pas...") # L'Assistant va prononcer le message 'Désolé, mais je ne vous entend pas...'
                         audio = recognizer.listen(source) # On récupère l'audio du microphone
 
+            if error is True: break # On sort de la condition en cas d'erreur
 
-                                         ## ***** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ***** ##
-                                         ## ***** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ***** ##
-
-                ## ⬇️ Envoie une invite à l'API GPT-3.5-turbo pour effectuer la réponse, en précisant des paramètres pour l'API GPT-3.5-turbo ⬇️ ##
-                answer = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[ {"role": "system", "content": "Vous êtes un assistant utile."}, {"role": "user", "content": question} ],
-                                                      temperature=0.5, top_p=1, frequency_penalty=0, presence_penalty=0, n=1, stop=["\nUser:"])
-                ## ⬆️ Envoie une invite à l'API GPT-3.5-turbo pour effectuer la réponse, en précisant des paramètres pour l'API GPT-3.5-turbo ⬆️ ##
-
-                bot_answer = answer["choices"][0]["message"]["content"] # On récupère la réponse récupérée par cette API
-
-                                        ## ***** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ***** ##
-
-                print("Réponse de l'assistant :", bot_answer) # On informe à l'utilisateur la réponse générée par l'assistant
-                synthesize_speech(bot_answer) # L'Assistant va prononcer la réponse qu'il a générée
-
-                                                ## *** ~~~~~~~~~~~~~~~~~~ *** ##
-
-                sleep_word = get_sleep_word(question) # On vérifie s'il utilise le mot clé pour désactiver l'assistant
-                if sleep_word is not None: break # Si l'utilisateur utilise bien le mot clé, on sort donc de la boucle actuelle (tant que c'est vrai)
-
-                audio = None # Redéfinit l'audio du microphone sur 'none' (rien)
-                bot_answer = None # Redéfinit la réponse du bot sur 'none' (rien)
+        if error is True: break # On sort de la boucle principale en cas d'erreur
 
 
                                         ### -------------------------------------------------- ###
