@@ -1,4 +1,6 @@
 # ~~~ IMPORTATIONS UTILE DES PACKAGE POUR LE FONCTIONNEMENT DU CODE ~~ #
+import time
+
 import openai
 import asyncio
 import pyttsx3
@@ -40,7 +42,6 @@ async def main():
         #~~# ⬇️Dans le cas si on récupère la source du micro, on continue le code ⬇️ #~~#
         with sr.Microphone() as source:
 
-
             recognizer.adjust_for_ambient_noise(source) # On ajuste l'audio du micro pour enlever les parasites ainsi que les bruit de fonds
             print(f"Pour parler avec l'assistant veuillez dire : 'ok assistant'") # Affiche un message pour demander d'activer l'assistant
 
@@ -58,7 +59,7 @@ async def main():
                     wake_word = get_wake_word(start_sentence) # On vérifie s'il utilise le mot clé pour activer l'assistant
                     if wake_word is not None: break # Si l'utilisateur utilise bien le mot clé, on sort donc de la boucle (tant que c'est vrai)
                     else: # Sinon, on lui dit qu'il faut prononcer le mot clé en question
-                        print("Pour m'activer, vous devez dire : 'ok assistant'")
+                        print("Pour activer l'assistant, vous devez dire : 'ok assistant'")
                         continue # On continue d'effectuer une execution du code de la boucle (tant que c'est vrai)
 
                 #""" ⬇️ Si on récupère une exception, on demande à l'utilisateur de réessayer ⬇️ """#
@@ -75,20 +76,24 @@ async def main():
             print("Posez votre question...") # On informe à l'utilisateur qu'il peut poser sa question
             synthesize_speech('Que puis-je faire pour vous ?') # L'Assistant va prononcer le message 'Que puis-je faire pour vous ?'
 
-            audio = recognizer.listen(source) # On récupère l'audio du microphone
+            ## °°° ⬇️ Tant que c'est vrai, (boucle) on effectue le code pour vérifier la question de l'utilisateur ⬇️ °°° ##
+            while True:
 
-            #""" ⬇️ On essaie de transformer l'audio du micro en texte avec 'Google' ⬇️ """#
-            try:
+                audio = recognizer.listen(source) # On récupère l'audio du microphone
 
-                question = recognizer.recognize_google(audio, language="fr-FR") # On transforme l'audio en texte
-                print(f"Vous avez dit: {question}") # On indique à l'utilisateur ce qu'il a dit
+                #""" ⬇️ On essaie de transformer l'audio du micro en texte avec 'Google' ⬇️ """#
+                try:
 
-            #""" ⬇️ Si on récupère une exception, on informe à l'utilisateur que l'assistant ne l'entend pas ⬇️ """#
-            except:
+                    question = recognizer.recognize_google(audio, language="fr-FR") # On transforme l'audio en texte
+                    print(f"Vous avez dit: {question}") # On indique à l'utilisateur ce qu'il a dit
+                    break # on sort donc de la boucle actuelle (tant que c'est vrai), pour que l'assistant réponde
 
-                print("L'Assistant a du mal à vous entendre, vous allez devoir prononcer de nouveau 'ok assistant' pour l'activer une nouvelle fois...") # On informe de réessayer de poser ça question
-                synthesize_speech("Désolé, mais je ne vous entend pas, au revoir...") # L'Assistant va prononcer le message 'Désolé, mais je ne vous entend pas...'
-                continue # On continue d'effectuer une execution du code de la boucle principale (tant que c'est vrai)
+                #""" ⬇️ Si on récupère une exception, on informe à l'utilisateur que l'assistant ne l'entend pas ⬇️ """#
+                except:
+
+                    print("L'Assistant a du mal à vous entendre, réessayer...") # On informe de réessayer de poser ça question
+                    synthesize_speech("Désolé, mais je ne vous entend pas...") # L'Assistant va prononcer le message 'Désolé, mais je ne vous entend pas...'
+                    continue # On continue d'effectuer une execution du code de la boucle principale (tant que c'est vrai)
 
                                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
