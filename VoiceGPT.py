@@ -10,7 +10,7 @@ import speech_recognition as sr
 
                                         ### -------------------------------------------------- ###
 
-openai.api_key = "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" # Initialise the OpenAI API
+openai.api_key = "OpenAI KEY" # Initialise the OpenAI API
 
 recognizer = sr.Recognizer() # Création d'un objet de reconnaissance et de variables de réveil de mots
 GPT_WAKE_WORD = "ok assistant" # Mot clé à utiliser pour activer le bot
