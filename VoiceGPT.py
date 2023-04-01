@@ -86,8 +86,8 @@ async def main():
             #""" ⬇️ Si on récupère une exception, on informe à l'utilisateur que l'assistant ne l'entend pas ⬇️ """#
             except:
 
-                print("Veuillez réessayer, l'assistant a du mal à vous entendre...") # On informe de réessayer de poser ça question
-                synthesize_speech("Désolé, mais je ne vous entend pas...") # L'Assistant va prononcer le message 'Désolé, mais je ne vous entend pas...'
+                print("l'Assistant a du mal à vous entendre, vous allez devoir prononcer de nouveau 'ok assistant' pour l'activer une nouvelle fois...") # On informe de réessayer de poser ça question
+                synthesize_speech("Désolé, mais je ne vous entend pas, au revoir...") # L'Assistant va prononcer le message 'Désolé, mais je ne vous entend pas...'
                 continue # On continue d'effectuer une execution du code de la boucle principale (tant que c'est vrai)
 
                                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
