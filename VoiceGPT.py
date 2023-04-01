@@ -1,7 +1,5 @@
 # ~~~ IMPORTATIONS UTILE DES PACKAGE POUR LE FONCTIONNEMENT DU CODE ~~ #
 import time
-import sys
-import os
 import openai
 import asyncio
 import pyttsx3
